@@ -45,7 +45,7 @@ Configure as variaveis abaixo no projeto da Vercel e execute um novo deploy:
 - `GOOGLE_ALLOWED_DOMAIN`
 - `APP_ORIGIN`
 
-`GOOGLE_APPLICATION_CREDENTIALS` aponta para um arquivo local e nao funciona na Vercel. Converta o JSON da conta de servico para Base64 e armazene o resultado em `GOOGLE_SERVICE_ACCOUNT_JSON_BASE64`. Use a URL de producao completa em `APP_ORIGIN` e `OPENROUTER_SITE_URL`, por exemplo `https://consistem-nexus.vercel.app`.
+`GOOGLE_APPLICATION_CREDENTIALS` aponta para um arquivo local e nao funciona na Vercel. Use `GOOGLE_SERVICE_ACCOUNT_JSON_BASE64` ou configure separadamente `GOOGLE_SERVICE_ACCOUNT_EMAIL`, `GOOGLE_PRIVATE_KEY` e `GOOGLE_PROJECT_ID`. A chave privada aceita quebras de linha reais ou `\n`. Use a URL de producao completa em `APP_ORIGIN` e `OPENROUTER_SITE_URL`, por exemplo `https://consistem-nexus.vercel.app`.
 
 Adicione essa mesma origem HTTPS no cliente OAuth do Google. O backend usa `/tmp` como cache efemero na Vercel e verifica mudancas do Drive sob demanda, pois funcoes serverless nao mantem timers ativos entre requisicoes.
 

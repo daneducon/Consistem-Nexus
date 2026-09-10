@@ -7,6 +7,9 @@ const environmentSchema = z.object({
   OPENROUTER_SITE_URL: z.url().default('http://localhost:5173'),
   GOOGLE_APPLICATION_CREDENTIALS: z.string().min(1).optional(),
   GOOGLE_SERVICE_ACCOUNT_JSON_BASE64: z.string().min(1).optional(),
+  GOOGLE_SERVICE_ACCOUNT_EMAIL: z.email().optional(),
+  GOOGLE_PRIVATE_KEY: z.string().min(1).optional(),
+  GOOGLE_PROJECT_ID: z.string().min(1).optional(),
   GOOGLE_DRIVE_FOLDER_ID: z.string().min(1),
   GOOGLE_SHARED_DRIVE_ID: z.string().optional(),
   GOOGLE_SHEET_NAME: z.string().min(1).default('MATRIZ'),
@@ -19,8 +22,10 @@ const environmentSchema = z.object({
   APP_ORIGIN: z.string().min(1).default('http://localhost:5173'),
   PORT: z.coerce.number().int().min(1).max(65_535).default(3001),
 }).refine(
-  (environment) => environment.GOOGLE_APPLICATION_CREDENTIALS || environment.GOOGLE_SERVICE_ACCOUNT_JSON_BASE64,
-  { message: 'Configure o caminho ou o JSON Base64 da conta de servico Google', path: ['GOOGLE_APPLICATION_CREDENTIALS'] },
+  (environment) => environment.GOOGLE_APPLICATION_CREDENTIALS
+    || environment.GOOGLE_SERVICE_ACCOUNT_JSON_BASE64
+    || (environment.GOOGLE_SERVICE_ACCOUNT_EMAIL && environment.GOOGLE_PRIVATE_KEY),
+  { message: 'Configure uma credencial valida da conta de servico Google', path: ['GOOGLE_APPLICATION_CREDENTIALS'] },
 );
 
 const parsedEnvironment = environmentSchema.safeParse(process.env);
@@ -38,7 +43,13 @@ const serviceAccountSchema = z.object({
 });
 
 let googleServiceAccount: z.infer<typeof serviceAccountSchema> | undefined;
-if (environment.GOOGLE_SERVICE_ACCOUNT_JSON_BASE64) {
+if (environment.GOOGLE_SERVICE_ACCOUNT_EMAIL && environment.GOOGLE_PRIVATE_KEY) {
+  googleServiceAccount = serviceAccountSchema.parse({
+    client_email: environment.GOOGLE_SERVICE_ACCOUNT_EMAIL,
+    private_key: environment.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+    project_id: environment.GOOGLE_PROJECT_ID,
+  });
+} else if (environment.GOOGLE_SERVICE_ACCOUNT_JSON_BASE64) {
   try {
     const decoded = Buffer.from(environment.GOOGLE_SERVICE_ACCOUNT_JSON_BASE64, 'base64').toString('utf8');
     googleServiceAccount = serviceAccountSchema.parse(JSON.parse(decoded));
