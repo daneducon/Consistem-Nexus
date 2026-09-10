@@ -13,6 +13,7 @@ import { getKnowledgeBase, getKnowledgeBaseStatus } from './services/knowledgeBa
 export const app = express();
 
 app.disable('x-powered-by');
+app.set('trust proxy', 1);
 app.use(cors({ origin: config.appOrigins }));
 app.use(express.json({ limit: '16kb' }));
 
