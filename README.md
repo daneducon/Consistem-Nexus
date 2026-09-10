@@ -31,6 +31,24 @@ Os resultados exibem o trecho da matriz usado na correspondencia e todas as URLs
 
 Crie um cliente OAuth 2.0 do tipo **Aplicativo da Web**, configure a tela de consentimento como interna e adicione a URL do frontend nas origens JavaScript autorizadas. Preencha `GOOGLE_OAUTH_CLIENT_ID` e `GOOGLE_ALLOWED_DOMAIN`. O backend valida o ID token, o e-mail verificado e o dominio antes de liberar busca, qualidade e sincronizacao.
 
+## Deploy na Vercel
+
+Configure as variaveis abaixo no projeto da Vercel e execute um novo deploy:
+
+- `OPENROUTER_API_KEY`
+- `OPENROUTER_MODEL`
+- `OPENROUTER_SITE_URL`
+- `GOOGLE_SERVICE_ACCOUNT_JSON_BASE64`
+- `GOOGLE_DRIVE_FOLDER_ID`
+- `GOOGLE_SHEET_NAME`
+- `GOOGLE_OAUTH_CLIENT_ID`
+- `GOOGLE_ALLOWED_DOMAIN`
+- `APP_ORIGIN`
+
+`GOOGLE_APPLICATION_CREDENTIALS` aponta para um arquivo local e nao funciona na Vercel. Converta o JSON da conta de servico para Base64 e armazene o resultado em `GOOGLE_SERVICE_ACCOUNT_JSON_BASE64`. Use a URL de producao completa em `APP_ORIGIN` e `OPENROUTER_SITE_URL`, por exemplo `https://consistem-nexus.vercel.app`.
+
+Adicione essa mesma origem HTTPS no cliente OAuth do Google. O backend usa `/tmp` como cache efemero na Vercel e verifica mudancas do Drive sob demanda, pois funcoes serverless nao mantem timers ativos entre requisicoes.
+
 ## Estrutura das planilhas
 
 O sistema procura a linha de cabecalho entre as 10 primeiras linhas de cada aba. Pelo menos uma coluna de nome e obrigatoria.

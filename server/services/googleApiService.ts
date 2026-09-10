@@ -3,7 +3,9 @@ import { GoogleAuth } from 'google-auth-library';
 
 const spreadsheetMimeType = 'application/vnd.google-apps.spreadsheet';
 const auth = new GoogleAuth({
-  keyFile: config.googleCredentialsPath,
+  ...(config.googleServiceAccount
+    ? { credentials: config.googleServiceAccount }
+    : { keyFile: config.googleCredentialsPath }),
   scopes: [
     'https://www.googleapis.com/auth/drive.readonly',
     'https://www.googleapis.com/auth/spreadsheets.readonly',

@@ -5,7 +5,8 @@ const environmentSchema = z.object({
   OPENROUTER_API_KEY: z.string().min(1),
   OPENROUTER_MODEL: z.string().min(1).default('google/gemma-4-31b-it'),
   OPENROUTER_SITE_URL: z.url().default('http://localhost:5173'),
-  GOOGLE_APPLICATION_CREDENTIALS: z.string().min(1),
+  GOOGLE_APPLICATION_CREDENTIALS: z.string().min(1).optional(),
+  GOOGLE_SERVICE_ACCOUNT_JSON_BASE64: z.string().min(1).optional(),
   GOOGLE_DRIVE_FOLDER_ID: z.string().min(1),
   GOOGLE_SHARED_DRIVE_ID: z.string().optional(),
   GOOGLE_SHEET_NAME: z.string().min(1).default('MATRIZ'),
@@ -13,10 +14,14 @@ const environmentSchema = z.object({
   GOOGLE_ALLOWED_DOMAIN: z.string().min(1).transform((domain) => domain.toLowerCase()),
   KNOWLEDGE_REFRESH_INTERVAL_MS: z.coerce.number().int().min(60_000).default(900_000),
   DRIVE_CHANGES_POLL_INTERVAL_MS: z.coerce.number().int().min(30_000).default(60_000),
-  KNOWLEDGE_CACHE_PATH: z.string().min(1).default('.data/knowledge-base.json'),
+  KNOWLEDGE_CACHE_PATH: z.string().min(1).optional(),
+  VERCEL: z.string().optional(),
   APP_ORIGIN: z.string().min(1).default('http://localhost:5173'),
   PORT: z.coerce.number().int().min(1).max(65_535).default(3001),
-});
+}).refine(
+  (environment) => environment.GOOGLE_APPLICATION_CREDENTIALS || environment.GOOGLE_SERVICE_ACCOUNT_JSON_BASE64,
+  { message: 'Configure o caminho ou o JSON Base64 da conta de servico Google', path: ['GOOGLE_APPLICATION_CREDENTIALS'] },
+);
 
 const parsedEnvironment = environmentSchema.safeParse(process.env);
 
@@ -26,12 +31,28 @@ if (!parsedEnvironment.success) {
 }
 
 const environment = parsedEnvironment.data;
+const serviceAccountSchema = z.object({
+  client_email: z.email(),
+  private_key: z.string().min(1),
+  project_id: z.string().min(1).optional(),
+});
+
+let googleServiceAccount: z.infer<typeof serviceAccountSchema> | undefined;
+if (environment.GOOGLE_SERVICE_ACCOUNT_JSON_BASE64) {
+  try {
+    const decoded = Buffer.from(environment.GOOGLE_SERVICE_ACCOUNT_JSON_BASE64, 'base64').toString('utf8');
+    googleServiceAccount = serviceAccountSchema.parse(JSON.parse(decoded));
+  } catch {
+    throw new Error('GOOGLE_SERVICE_ACCOUNT_JSON_BASE64 nao contem um JSON Base64 valido');
+  }
+}
 
 export const config = {
   openRouterApiKey: environment.OPENROUTER_API_KEY,
   openRouterModel: environment.OPENROUTER_MODEL,
   openRouterSiteUrl: environment.OPENROUTER_SITE_URL,
   googleCredentialsPath: environment.GOOGLE_APPLICATION_CREDENTIALS,
+  googleServiceAccount,
   googleDriveFolderId: environment.GOOGLE_DRIVE_FOLDER_ID,
   googleSharedDriveId: environment.GOOGLE_SHARED_DRIVE_ID,
   googleSheetName: environment.GOOGLE_SHEET_NAME,
@@ -39,7 +60,7 @@ export const config = {
   googleAllowedDomain: environment.GOOGLE_ALLOWED_DOMAIN,
   refreshIntervalMs: environment.KNOWLEDGE_REFRESH_INTERVAL_MS,
   changesPollIntervalMs: environment.DRIVE_CHANGES_POLL_INTERVAL_MS,
-  knowledgeCachePath: environment.KNOWLEDGE_CACHE_PATH,
+  knowledgeCachePath: environment.KNOWLEDGE_CACHE_PATH ?? (environment.VERCEL ? '/tmp/consistem-nexus/knowledge-base.json' : '.data/knowledge-base.json'),
   appOrigins: environment.APP_ORIGIN.split(',').map((origin) => origin.trim()),
   port: environment.PORT,
 };

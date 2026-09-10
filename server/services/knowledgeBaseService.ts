@@ -32,6 +32,7 @@ const snapshot: Snapshot = {
 };
 let refreshPromise: Promise<void> | null = null;
 let restorePromise: Promise<void> | null = null;
+let lastChangesCheckAt = 0;
 
 function deduplicate(items: KnowledgeItem[]): KnowledgeItem[] {
   const uniqueItems = new Map<string, KnowledgeItem>();
@@ -155,6 +156,7 @@ export async function synchronizeDriveChanges(): Promise<void> {
     snapshot.qualityReport = qualityReport;
     snapshot.updatedAt = updatedAt;
     snapshot.initialized = true;
+    lastChangesCheckAt = Date.now();
     console.info(JSON.stringify({
       event: 'drive_changes_synchronized',
       changes: result.changes.length,
@@ -220,7 +222,11 @@ async function restoreKnowledgeBase(): Promise<void> {
 
 export async function getKnowledgeBase(): Promise<Snapshot> {
   await restoreKnowledgeBase();
-  if (!snapshot.initialized) await refreshKnowledgeBase();
+  if (!snapshot.initialized) {
+    await refreshKnowledgeBase();
+  } else if (Date.now() - lastChangesCheckAt >= config.changesPollIntervalMs) {
+    await synchronizeDriveChanges();
+  }
   return snapshot;
 }
 
