@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { getKnowledgeBase, getKnowledgeBaseQuality } from '../services/knowledgeBaseService';
+import { getKnowledgeBase, getKnowledgeBaseQuality } from '../services/knowledgeBaseService.js';
 
 export const qualityRouter = Router();
 

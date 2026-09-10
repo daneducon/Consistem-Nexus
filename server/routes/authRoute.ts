@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { config } from '../config';
-import { authenticateGoogleUser } from '../middleware/authenticateGoogleUser';
+import { config } from '../config.js';
+import { authenticateGoogleUser } from '../middleware/authenticateGoogleUser.js';
 
 export const authRouter = Router();
 

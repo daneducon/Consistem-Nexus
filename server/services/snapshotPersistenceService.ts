@@ -1,9 +1,9 @@
 import { mkdir, readFile, rename, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { z } from 'zod';
-import type { KnowledgeItem } from './normalizeService';
-import type { QualityReport } from '../../shared/quality';
-import { emptyQualityReport } from './qualityService';
+import type { KnowledgeItem } from './normalizeService.js';
+import type { QualityReport } from '../../shared/quality.js';
+import { emptyQualityReport } from './qualityService.js';
 
 const nullableString = z.string().nullable();
 const knowledgeItemSchema = z.object({

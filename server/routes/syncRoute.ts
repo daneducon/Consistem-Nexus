@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import rateLimit from 'express-rate-limit';
-import { getKnowledgeBaseStatus, refreshKnowledgeBase } from '../services/knowledgeBaseService';
+import { getKnowledgeBaseStatus, refreshKnowledgeBase } from '../services/knowledgeBaseService.js';
 
 export const syncRouter = Router();
 

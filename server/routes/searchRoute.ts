@@ -1,9 +1,9 @@
 import { Router } from 'express';
 import rateLimit from 'express-rate-limit';
 import { z } from 'zod';
-import { getKnowledgeBase } from '../services/knowledgeBaseService';
-import { createExactMatchResponse, findExactProgramMatches, rankSearchCandidates } from '../services/hybridSearchService';
-import { searchWithOpenRouter } from '../services/openRouterService';
+import { getKnowledgeBase } from '../services/knowledgeBaseService.js';
+import { createExactMatchResponse, findExactProgramMatches, rankSearchCandidates } from '../services/hybridSearchService.js';
+import { searchWithOpenRouter } from '../services/openRouterService.js';
 
 const requestSchema = z.object({
   query: z.string().trim().min(3).max(300),

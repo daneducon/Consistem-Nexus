@@ -1,6 +1,6 @@
 import type { NextFunction, Request, Response } from 'express';
 import { OAuth2Client } from 'google-auth-library';
-import { config } from '../config';
+import { config } from '../config.js';
 
 const oauthClient = new OAuth2Client(config.googleOAuthClientId);
 

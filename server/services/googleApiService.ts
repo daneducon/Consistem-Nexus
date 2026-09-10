@@ -1,4 +1,4 @@
-import { config } from '../config';
+import { config } from '../config.js';
 import { GoogleAuth } from 'google-auth-library';
 
 const spreadsheetMimeType = 'application/vnd.google-apps.spreadsheet';

@@ -1,15 +1,15 @@
-import { config } from '../config';
+import { config } from '../config.js';
 import {
   getDriveStartPageToken,
   isSpreadsheetInConfiguredFolder,
   listDriveChanges,
   listSpreadsheets,
   readSpreadsheet,
-} from './googleApiService';
-import { normalizeSpreadsheetWithReport, normalizeText, type KnowledgeItem } from './normalizeService';
-import { loadPersistedSnapshot, persistSnapshot } from './snapshotPersistenceService';
-import { buildQualityReport, emptyQualityReport } from './qualityService';
-import type { QualityIssue, QualityReport } from '../../shared/quality';
+} from './googleApiService.js';
+import { normalizeSpreadsheetWithReport, normalizeText, type KnowledgeItem } from './normalizeService.js';
+import { loadPersistedSnapshot, persistSnapshot } from './snapshotPersistenceService.js';
+import { buildQualityReport, emptyQualityReport } from './qualityService.js';
+import type { QualityIssue, QualityReport } from '../../shared/quality.js';
 
 type Snapshot = {
   items: KnowledgeItem[];

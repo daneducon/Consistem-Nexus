@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { findExactProgramMatches, rankSearchCandidates } from './hybridSearchService';
-import type { KnowledgeItem } from './normalizeService';
+import { findExactProgramMatches, rankSearchCandidates } from './hybridSearchService.js';
+import type { KnowledgeItem } from './normalizeService.js';
 
 function item(id: string, name: string, programs: string[] = [], content = ''): KnowledgeItem {
   return {

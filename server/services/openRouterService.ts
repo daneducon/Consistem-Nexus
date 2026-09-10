@@ -1,8 +1,8 @@
 import { z } from 'zod';
-import { config } from '../config';
-import type { SearchResponse } from '../../shared/search';
-import type { KnowledgeItem } from './normalizeService';
-import { createSearchItem } from './hybridSearchService';
+import { config } from '../config.js';
+import type { SearchResponse } from '../../shared/search.js';
+import type { KnowledgeItem } from './normalizeService.js';
+import { createSearchItem } from './hybridSearchService.js';
 
 const modelResponseSchema = z.object({
   answer: z.string().min(1).max(500),

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { normalizeSpreadsheet, normalizeSpreadsheetWithReport, normalizeText } from './normalizeService';
-import type { SpreadsheetData } from './googleApiService';
+import { normalizeSpreadsheet, normalizeSpreadsheetWithReport, normalizeText } from './normalizeService.js';
+import type { SpreadsheetData } from './googleApiService.js';
 
 function spreadsheet(values: string[][]): SpreadsheetData {
   return {

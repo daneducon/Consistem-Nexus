@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
-import type { QualityIssue, QualityIssueType, QualityReport } from '../../shared/quality';
-import { normalizeText, type KnowledgeItem } from './normalizeService';
+import type { QualityIssue, QualityIssueType, QualityReport } from '../../shared/quality.js';
+import { normalizeText, type KnowledgeItem } from './normalizeService.js';
 
 const issueTypes: QualityIssueType[] = [
   'missing_header',

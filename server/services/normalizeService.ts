@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
-import type { SpreadsheetData } from './googleApiService';
-import type { QualityIssue } from '../../shared/quality';
+import type { SpreadsheetData } from './googleApiService.js';
+import type { QualityIssue } from '../../shared/quality.js';
 
 export type KnowledgeItem = {
   id: string;

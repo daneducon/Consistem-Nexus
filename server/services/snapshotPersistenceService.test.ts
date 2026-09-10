@@ -3,9 +3,9 @@ import { rm } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { afterEach, describe, expect, it } from 'vitest';
-import { loadPersistedSnapshot, persistSnapshot } from './snapshotPersistenceService';
-import type { KnowledgeItem } from './normalizeService';
-import { emptyQualityReport } from './qualityService';
+import { loadPersistedSnapshot, persistSnapshot } from './snapshotPersistenceService.js';
+import type { KnowledgeItem } from './normalizeService.js';
+import { emptyQualityReport } from './qualityService.js';
 
 const testDirectory = join(tmpdir(), `consistem-nexus-${randomUUID()}`);
 const cachePath = join(testDirectory, 'knowledge-base.json');

@@ -2,13 +2,13 @@ import express from 'express';
 import cors from 'cors';
 import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { config } from './config';
-import { searchRouter } from './routes/searchRoute';
-import { syncRouter } from './routes/syncRoute';
-import { qualityRouter } from './routes/qualityRoute';
-import { authRouter } from './routes/authRoute';
-import { authenticateGoogleUser } from './middleware/authenticateGoogleUser';
-import { getKnowledgeBase, getKnowledgeBaseStatus } from './services/knowledgeBaseService';
+import { config } from './config.js';
+import { searchRouter } from './routes/searchRoute.js';
+import { syncRouter } from './routes/syncRoute.js';
+import { qualityRouter } from './routes/qualityRoute.js';
+import { authRouter } from './routes/authRoute.js';
+import { authenticateGoogleUser } from './middleware/authenticateGoogleUser.js';
+import { getKnowledgeBase, getKnowledgeBaseStatus } from './services/knowledgeBaseService.js';
 
 export const app = express();
 

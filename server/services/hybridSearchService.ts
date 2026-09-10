@@ -1,5 +1,5 @@
-import type { SearchItem, SearchResponse } from '../../shared/search';
-import { normalizeText, type KnowledgeItem } from './normalizeService';
+import type { SearchItem, SearchResponse } from '../../shared/search.js';
+import { normalizeText, type KnowledgeItem } from './normalizeService.js';
 
 const ignoredTokens = new Set([
   'ainda', 'aprender', 'como', 'conhecer', 'mais', 'material', 'onde', 'programa',
