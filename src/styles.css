@@ -163,7 +163,7 @@ input:focus-visible {
 }
 
 .login-card > img {
-  width: 250px;
+  width: min(100%, 340px);
   height: auto;
   display: block;
   margin: 0 auto 44px;
@@ -1037,7 +1037,7 @@ footer span:first-child {
   }
 
   .login-card > img {
-    width: 220px;
+    width: min(100%, 290px);
     margin-bottom: 36px;
   }
 
