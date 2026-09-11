@@ -1,10 +1,13 @@
 import { config } from '../config.js';
 import {
   getDriveStartPageToken,
+  getKnownFolderIds,
+  isFolderTreeChange,
   isSpreadsheetInConfiguredFolder,
   listDriveChanges,
   listSpreadsheets,
   readSpreadsheet,
+  setKnownFolderIds,
 } from './googleApiService.js';
 import { normalizeSpreadsheetWithReport, normalizeText, type KnowledgeItem } from './normalizeService.js';
 import { loadPersistedSnapshot, persistSnapshot } from './snapshotPersistenceService.js';
@@ -65,6 +68,7 @@ export function refreshKnowledgeBase(): Promise<void> {
       items,
       fileCount: files.length,
       fileIds: files.map((file) => file.id),
+      folderIds: [...getKnownFolderIds()],
       drivePageToken,
       updatedAt,
       qualityReport,
@@ -106,6 +110,13 @@ export async function synchronizeDriveChanges(): Promise<void> {
   refreshPromise = (async () => {
     const startedAt = Date.now();
     const result = await listDriveChanges(snapshot.drivePageToken!);
+    // Mudança estrutural (subpasta criada, movida ou removida): a árvore
+    // pode ter ganhado/perdido planilhas em qualquer nível. Reconcilia tudo.
+    if (result.changes.some((change) => isFolderTreeChange(change.file, change.fileId))) {
+      refreshPromise = null;
+      await refreshKnowledgeBase();
+      return;
+    }
     const existingFileIds = new Set(snapshot.fileIds);
     const relevantChanges = result.changes.filter(
       (change) => existingFileIds.has(change.fileId) || isSpreadsheetInConfiguredFolder(change.file),
@@ -144,6 +155,7 @@ export async function synchronizeDriveChanges(): Promise<void> {
       items,
       fileCount: fileIds.size,
       fileIds: [...fileIds],
+      folderIds: [...getKnownFolderIds()],
       drivePageToken: result.newPageToken,
       updatedAt,
       qualityReport,
@@ -173,6 +185,7 @@ export async function synchronizeDriveChanges(): Promise<void> {
             items: snapshot.items,
             fileCount: snapshot.fileCount,
             fileIds: snapshot.fileIds,
+            folderIds: [...getKnownFolderIds()],
             drivePageToken: null,
             updatedAt: snapshot.updatedAt,
             qualityReport: snapshot.qualityReport,
@@ -203,6 +216,7 @@ async function restoreKnowledgeBase(): Promise<void> {
     snapshot.items = persisted.items;
     snapshot.fileCount = persisted.fileCount;
     snapshot.fileIds = persisted.fileIds;
+    setKnownFolderIds(persisted.folderIds);
     snapshot.drivePageToken = persisted.drivePageToken;
     snapshot.qualityReport = persisted.qualityReport;
     snapshot.updatedAt = persisted.updatedAt;
@@ -223,6 +237,10 @@ async function restoreKnowledgeBase(): Promise<void> {
 export async function getKnowledgeBase(): Promise<Snapshot> {
   await restoreKnowledgeBase();
   if (!snapshot.initialized) {
+    await refreshKnowledgeBase();
+  } else if (getKnownFolderIds().size <= 1 && snapshot.fileIds.length > 0) {
+    // Cache legado sem o mapa de subpastas: uma reconciliação completa
+    // redesenha a árvore antes de qualquer incremental.
     await refreshKnowledgeBase();
   } else if (Date.now() - lastChangesCheckAt >= config.changesPollIntervalMs) {
     await synchronizeDriveChanges();

@@ -120,7 +120,7 @@ O identificador do modelo e configurado por ambiente. O prototipo usa `google/ge
 
 ### 6.1 Sincronizacao
 
-1. O backend lista, com paginacao, as planilhas diretamente contidas na pasta configurada.
+1. O backend lista, com paginacao, as planilhas da pasta configurada e de todas as suas subpastas, em qualquer nivel.
 2. Para cada arquivo, consulta metadados e valores das abas permitidas.
 3. Cada linha util e convertida para um registro canonico.
 4. Registros invalidos sao ignorados e contabilizados no log de sincronizacao.

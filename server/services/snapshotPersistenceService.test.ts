@@ -41,6 +41,7 @@ describe('snapshot persistence', () => {
     await persistSnapshot(cachePath, {
       fileCount: 1,
       fileIds: ['source-1'],
+      folderIds: ['folder-1'],
       drivePageToken: 'page-token',
       updatedAt,
       items: [cachedItem],
@@ -51,6 +52,7 @@ describe('snapshot persistence', () => {
     expect(restored).toEqual({
       fileCount: 1,
       fileIds: ['source-1'],
+      folderIds: ['folder-1'],
       drivePageToken: 'page-token',
       updatedAt,
       items: [cachedItem],

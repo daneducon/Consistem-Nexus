@@ -2,6 +2,22 @@ import { config } from '../config.js';
 import { GoogleAuth } from 'google-auth-library';
 
 const spreadsheetMimeType = 'application/vnd.google-apps.spreadsheet';
+export const folderMimeType = 'application/vnd.google-apps.folder';
+
+// Pastas conhecidas dentro da árvore configurada (raiz + subpastas descobertas
+// na última sincronização completa). Usado pelo sync incremental para aceitar
+// planilhas aninhadas e detectar mudanças estruturais (pasta criada/movida).
+const knownFolderIds = new Set<string>([config.googleDriveFolderId]);
+
+export function getKnownFolderIds(): Set<string> {
+  return knownFolderIds;
+}
+
+export function setKnownFolderIds(folderIds: string[]): void {
+  knownFolderIds.clear();
+  knownFolderIds.add(config.googleDriveFolderId);
+  for (const folderId of folderIds) knownFolderIds.add(folderId);
+}
 const auth = new GoogleAuth({
   ...(config.googleServiceAccount
     ? { credentials: config.googleServiceAccount }
@@ -72,7 +88,7 @@ async function googleFetch<T>(url: URL): Promise<T> {
   return response.json() as Promise<T>;
 }
 
-export async function listSpreadsheets(): Promise<DriveFile[]> {
+async function listFilesInFolder(parentId: string, mimeType: string): Promise<DriveFile[]> {
   const files: DriveFile[] = [];
   let pageToken: string | undefined;
 
@@ -80,7 +96,7 @@ export async function listSpreadsheets(): Promise<DriveFile[]> {
     const url = new URL('https://www.googleapis.com/drive/v3/files');
     url.searchParams.set(
       'q',
-      `'${config.googleDriveFolderId}' in parents and trashed = false and mimeType = '${spreadsheetMimeType}'`,
+      `'${parentId}' in parents and trashed = false and mimeType = '${mimeType}'`,
     );
     url.searchParams.set('fields', 'nextPageToken,files(id,name,webViewLink)');
     url.searchParams.set('pageSize', '1000');
@@ -98,6 +114,30 @@ export async function listSpreadsheets(): Promise<DriveFile[]> {
     pageToken = page.nextPageToken;
   } while (pageToken);
 
+  return files;
+}
+
+export async function listSpreadsheets(): Promise<DriveFile[]> {
+  const files = await listFilesInFolder(config.googleDriveFolderId, spreadsheetMimeType);
+  const discoveredFolders: string[] = [];
+  const visited = new Set<string>([config.googleDriveFolderId]);
+  const queue = [config.googleDriveFolderId];
+
+  // Varredura em largura: inclui planilhas de todos os níveis de subpastas.
+  while (queue.length > 0) {
+    const parentId = queue.shift()!;
+    const subfolders = await listFilesInFolder(parentId, folderMimeType);
+    for (const folder of subfolders) {
+      if (visited.has(folder.id)) continue;
+      visited.add(folder.id);
+      discoveredFolders.push(folder.id);
+      queue.push(folder.id);
+      files.push(...await listFilesInFolder(folder.id, spreadsheetMimeType));
+    }
+  }
+
+  setKnownFolderIds(discoveredFolders);
+  files.sort((left, right) => left.name.localeCompare(right.name, 'pt-BR'));
   return files;
 }
 
@@ -138,8 +178,19 @@ export function isSpreadsheetInConfiguredFolder(file: DriveFile | undefined): fi
     file
     && !file.trashed
     && file.mimeType === spreadsheetMimeType
-    && file.parents?.includes(config.googleDriveFolderId),
+    && file.parents?.some((parent) => knownFolderIds.has(parent)),
   );
+}
+
+export function isFolderTreeChange(file: DriveFile | undefined, fileId: string): boolean {
+  if (file && !file.trashed && file.mimeType === folderMimeType) {
+    if (file.id === config.googleDriveFolderId) return true;
+    if (file.parents?.some((parent) => knownFolderIds.has(parent))) return true;
+    if (knownFolderIds.has(file.id)) return true;
+  }
+  // Pasta conhecida removida/renomeada: o change vem sem metadados.
+  if (knownFolderIds.has(fileId) && fileId !== config.googleDriveFolderId) return true;
+  return false;
 }
 
 function asStringRows(values: unknown[][] | undefined): string[][] {

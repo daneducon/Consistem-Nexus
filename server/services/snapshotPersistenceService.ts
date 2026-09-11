@@ -62,6 +62,7 @@ const currentSnapshotSchema = z.object({
   version: z.literal(2),
   fileCount: z.number().int().nonnegative(),
   fileIds: z.array(z.string()),
+  folderIds: z.array(z.string()).default([]),
   drivePageToken: z.string().nullable(),
   updatedAt: z.iso.datetime(),
   items: z.array(knowledgeItemSchema),
@@ -73,6 +74,7 @@ const persistedSnapshotSchema = z.discriminatedUnion('version', [legacySnapshotS
 export type PersistedSnapshot = {
   fileCount: number;
   fileIds: string[];
+  folderIds: string[];
   drivePageToken: string | null;
   updatedAt: Date;
   items: KnowledgeItem[];
@@ -88,6 +90,7 @@ export async function loadPersistedSnapshot(cachePath: string): Promise<Persiste
       fileIds: parsed.version === 2
         ? parsed.fileIds
         : [...new Set(parsed.items.map((item) => item.sourceFileId))],
+      folderIds: parsed.version === 2 ? parsed.folderIds : [],
       drivePageToken: parsed.version === 2 ? parsed.drivePageToken : null,
       updatedAt: new Date(parsed.updatedAt),
       items: parsed.items,
@@ -112,6 +115,7 @@ export async function persistSnapshot(cachePath: string, snapshot: PersistedSnap
     version: 2,
     fileCount: snapshot.fileCount,
     fileIds: snapshot.fileIds,
+    folderIds: snapshot.folderIds,
     drivePageToken: snapshot.drivePageToken,
     updatedAt: snapshot.updatedAt.toISOString(),
     items: snapshot.items,
